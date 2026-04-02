@@ -268,6 +268,10 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
   renderer.setClearColor(opts.background, 1)
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = opts.exposure
+  // Ensure canvas fills its container
+  renderer.domElement.style.display = 'block'
+  renderer.domElement.style.width = '100%'
+  renderer.domElement.style.height = '100%'
   opts.container.appendChild(renderer.domElement)
 
   // Offscreen render target
@@ -324,9 +328,11 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
 
   // Resize
   const onResize = () => {
-    const w = opts.container.clientWidth || window.innerWidth
-    const h = opts.container.clientHeight || window.innerHeight
-    renderer.setSize(w, h)
+    const rect = opts.container.getBoundingClientRect()
+    const w = Math.round(rect.width) || window.innerWidth
+    const h = Math.round(rect.height) || window.innerHeight
+    // Set canvas buffer size without touching CSS style (false = don't update style)
+    renderer.setSize(w, h, false)
     sceneRT.setSize(w, h)
     camera.aspect = w / h
     camera.updateProjectionMatrix()

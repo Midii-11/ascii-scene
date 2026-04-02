@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hive Studio — Creative Agency</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; background: #000; }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      background: transparent;  /* IMPORTANT: transparent so canvas shows through */
+      min-height: 100vh;
+    }
+
+    /* ── ASCII canvas is fixed behind everything ─────────── */
+    #ascii-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: -1;            /* behind normal flow content */
+      overflow: hidden;
+    }
+
+    /* ── All content sits on top naturally ────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+    }
+    .logo {
+      font-size: 20px; font-weight: 700; letter-spacing: 2px;
+      color: #e6b828; text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.6); text-decoration: none;
+      font-size: 13px; font-weight: 500; letter-spacing: 1px;
+      text-transform: uppercase; transition: color 0.3s;
+    }
+    .nav-links a:hover { color: #e6b828; }
+
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 120px 24px 80px;
+    }
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 700; line-height: 1.05; letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 0%, #e6b828 50%, #d4a017 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      margin-top: 24px; font-size: 18px; line-height: 1.6;
+      color: rgba(255,255,255,0.5); max-width: 520px;
+    }
+    .hero-cta { margin-top: 40px; display: flex; gap: 16px; }
+    .btn {
+      display: inline-block; padding: 14px 32px;
+      font: 600 14px/1 'Inter', sans-serif; letter-spacing: 0.5px;
+      border-radius: 6px; text-decoration: none; transition: all 0.3s; cursor: pointer;
+    }
+    .btn-primary { background: #e6b828; color: #000; border: none; }
+    .btn-primary:hover { background: #f0c840; transform: translateY(-2px); }
+    .btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-outline:hover { border-color: #e6b828; color: #e6b828; }
+
+    section {
+      padding: 120px 48px; max-width: 1100px; margin: 0 auto;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 3px;
+      text-transform: uppercase; color: #e6b828; margin-bottom: 16px;
+    }
+    section h2 { font-size: 40px; font-weight: 700; letter-spacing: -1px; margin-bottom: 24px; }
+    section p { font-size: 16px; line-height: 1.7; color: rgba(255,255,255,0.55); max-width: 600px; }
+
+    .glass {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border-radius: 16px; padding: 60px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .services-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px; margin-top: 48px;
+    }
+    .service-card {
+      padding: 32px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; transition: border-color 0.3s, transform 0.3s;
+    }
+    .service-card:hover { border-color: rgba(230,184,40,0.3); transform: translateY(-4px); }
+    .service-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+    .service-card p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.4); }
+    .service-icon { font-size: 28px; margin-bottom: 16px; display: block; }
+
+    .stats { display: flex; gap: 48px; margin-top: 60px; flex-wrap: wrap; }
+    .stat h3 { font-size: 48px; font-weight: 700; color: #e6b828; }
+    .stat p { font-size: 13px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+    footer {
+      padding: 48px; text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.25); font-size: 13px;
+    }
+    footer a { color: #e6b828; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <!-- ASCII background: fixed, z-index -1, behind all content -->
+  <div id="ascii-bg"></div>
+
+  <!-- Website content: normal flow, naturally on top -->
+  <nav>
+    <div class="logo">Hive Studio</div>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero">
+    <h1>We craft digital<br>experiences</h1>
+    <p>Award-winning creative studio blending code and design to build products that move people.</p>
+    <div class="hero-cta">
+      <a href="#services" class="btn btn-primary">Our Work</a>
+      <a href="#contact" class="btn btn-outline">Get in Touch</a>
+    </div>
+  </div>
+
+  <section id="services">
+    <div class="glass">
+      <div class="section-label">What we do</div>
+      <h2>Services</h2>
+      <p>From concept to launch, we handle every pixel and every line of code.</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <span class="service-icon">*</span>
+          <h3>Brand Identity</h3>
+          <p>Logos, color systems, and visual languages that make brands unforgettable.</p>
+        </div>
+        <div class="service-card">
+          <span class="service-icon">&lt;/&gt;</span>
+          <h3>Web Development</h3>
+          <p>Performant, accessible websites built with modern frameworks and best practices.</p>
+        </div>
+        <div class="service-card">
+          <span class="service-icon">#</span>
+          <h3>3D & Motion</h3>
+          <p>Interactive 3D experiences, WebGL shaders, and motion design that captivates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="glass">
+      <div class="section-label">About us</div>
+      <h2>Numbers speak</h2>
+      <p>A small team delivering outsized results for startups and Fortune 500s alike.</p>
+      <div class="stats">
+        <div class="stat"><h3>127</h3><p>Projects shipped</p></div>
+        <div class="stat"><h3>98%</h3><p>Client retention</p></div>
+        <div class="stat"><h3>14</h3><p>Awards won</p></div>
+        <div class="stat"><h3>8</h3><p>Team members</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="glass">
+      <div class="section-label">Get in touch</div>
+      <h2>Start a project</h2>
+      <p>Have an idea? Let's talk about bringing it to life.</p>
+      <div style="margin-top: 32px;">
+        <a href="mailto:hello@hivestudio.io" class="btn btn-primary">hello@hivestudio.io</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2026 Hive Studio. Powered by <a href="https://github.com/chenglou/pretext">pretext</a>.
+  </footer>
+
+  <script type="module" src="./website-demo.ts"></script>
+</body>
+</html>
