@@ -1,19 +1,62 @@
 {
-  "name": "pretext_test",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "ascii-scene",
+  "version": "0.1.0",
+  "description": "Render any 3D model as animated ASCII art. GPU-powered, mouse-reactive, one function call.",
+  "type": "module",
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
+    },
+    "./standalone": {
+      "import": "./dist/standalone.js",
+      "require": "./dist/standalone.umd.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build --config vite.lib.config.ts && vite build --config vite.standalone.config.ts && tsc --emitDeclarationOnly",
+    "build:demo": "vite build",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "ascii",
+    "ascii-art",
+    "three",
+    "threejs",
+    "webgl",
+    "3d",
+    "shader",
+    "glb",
+    "gltf",
+    "background",
+    "animation",
+    "pretext"
+  ],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "peerDependencies": {
+    "three": ">=0.160.0"
+  },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.4",
+    "@chenglou/pretext": "^0.0.4"
+  },
+  "devDependencies": {
     "@types/three": "^0.183.1",
     "three": "^0.183.2",
+    "typescript": "^5.7.0",
     "vite": "^8.0.3"
   }
 }

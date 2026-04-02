@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Squids — Deep Void Expeditions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; background: #020108; }
+    body { font-family: 'Space Grotesk', sans-serif; color: #fff; background: transparent; }
+
+    #ascii-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      background: linear-gradient(180deg, rgba(2,1,8,0.9) 0%, transparent 100%);
+    }
+    .logo { font: 700 18px 'Space Mono', monospace; color: #7b5cff; letter-spacing: 3px; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      font: 500 12px/1 'Space Grotesk'; letter-spacing: 2px; text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: #7b5cff; }
+
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 120px 24px 80px;
+    }
+    .hero-tag {
+      font: 600 12px/1 'Space Mono', monospace; color: #7b5cff;
+      letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px;
+      opacity: 0.8;
+    }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 88px);
+      font-weight: 700; line-height: 1.05; letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 0%, #7b5cff 40%, #c084fc 70%, #38bdf8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero p {
+      margin-top: 24px; font-size: 17px; line-height: 1.7;
+      color: rgba(255,255,255,0.4); max-width: 540px;
+    }
+    .hero-cta { margin-top: 40px; display: flex; gap: 16px; }
+
+    .btn {
+      display: inline-block; padding: 14px 32px;
+      font: 600 13px/1 'Space Grotesk'; letter-spacing: 1px;
+      border-radius: 8px; text-decoration: none; transition: all 0.3s; cursor: pointer;
+    }
+    .btn-primary { background: #7b5cff; color: #fff; border: none; }
+    .btn-primary:hover { background: #9b7fff; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(123,92,255,0.3); }
+    .btn-ghost { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.12); }
+    .btn-ghost:hover { border-color: #7b5cff; color: #7b5cff; }
+
+    section { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      font: 600 11px/1 'Space Mono', monospace; color: #7b5cff;
+      letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px;
+    }
+    section h2 { font-size: 36px; font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; }
+    section p { font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.45); max-width: 600px; }
+
+    .glass {
+      background: rgba(8, 4, 24, 0.6);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border-radius: 16px; padding: 56px;
+      border: 1px solid rgba(123,92,255,0.1);
+    }
+
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px; margin-top: 40px;
+    }
+    .feature {
+      padding: 28px;
+      background: rgba(123,92,255,0.04);
+      border: 1px solid rgba(123,92,255,0.08);
+      border-radius: 12px; transition: all 0.3s;
+    }
+    .feature:hover { border-color: rgba(123,92,255,0.25); transform: translateY(-3px); }
+    .feature-icon {
+      font: 700 24px 'Space Mono', monospace; color: #7b5cff;
+      margin-bottom: 14px; display: block;
+    }
+    .feature h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+    .feature p { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.35); }
+
+    .stats-row { display: flex; gap: 48px; margin-top: 48px; flex-wrap: wrap; }
+    .stat-item h3 {
+      font: 700 44px 'Space Mono', monospace; color: #7b5cff;
+      letter-spacing: -1px;
+    }
+    .stat-item p {
+      font-size: 12px; color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 2px; margin-top: 4px;
+    }
+
+    .cta-section {
+      text-align: center; padding: 120px 48px;
+    }
+    .cta-section h2 {
+      font-size: 42px; font-weight: 700; margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff, #7b5cff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .cta-section p {
+      margin: 0 auto 32px; max-width: 480px; text-align: center;
+    }
+
+    footer {
+      padding: 40px 48px; text-align: center;
+      border-top: 1px solid rgba(123,92,255,0.08);
+      color: rgba(255,255,255,0.2); font-size: 12px;
+      font-family: 'Space Mono', monospace; letter-spacing: 1px;
+    }
+    footer a { color: #7b5cff; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div id="ascii-bg"></div>
+
+  <nav>
+    <div class="logo">&lt;/&gt; Space Squids</div>
+    <ul class="nav-links">
+      <li><a href="#species">Species</a></li>
+      <li><a href="#missions">Missions</a></li>
+      <li><a href="#join">Join</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-tag">// Transmission from Sector 7G</div>
+    <h1>Tentacles across<br>the cosmos</h1>
+    <p>The Space Squids have navigated dark matter streams for millennia. We are explorers, builders, and keepers of the deep void.</p>
+    <div class="hero-cta">
+      <a href="#species" class="btn btn-primary">Explore Species</a>
+      <a href="#join" class="btn btn-ghost">Join the Fleet</a>
+    </div>
+  </div>
+
+  <section id="species">
+    <div class="glass">
+      <div class="section-tag">// Classification</div>
+      <h2>Known Species</h2>
+      <p>Eight documented species of void-dwelling cephalopods, each adapted to extreme interstellar conditions.</p>
+      <div class="features">
+        <div class="feature">
+          <span class="feature-icon">01</span>
+          <h3>Void Kraken</h3>
+          <p>Apex predator of the dark matter lanes. Bioluminescent tentacles span up to 400 meters. Hunts by gravitational distortion.</p>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">02</span>
+          <h3>Nebula Drifter</h3>
+          <p>Passive filter-feeder that absorbs stellar radiation through translucent membranes. Colonies of 10,000+ observed near dying stars.</p>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">03</span>
+          <h3>Quantum Cuttlefish</h3>
+          <p>Can exist in superposition across multiple spatial coordinates. Theorized to navigate via quantum entanglement.</p>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">04</span>
+          <h3>Chrome Nautilus</h3>
+          <p>Metallic exoskeleton resistant to solar flares. Builds orbital shell structures from asteroid debris.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="missions">
+    <div class="glass">
+      <div class="section-tag">// Fleet Status</div>
+      <h2>Mission Log</h2>
+      <p>Active expeditions tracking space squid migration patterns across the Orion Arm.</p>
+      <div class="stats-row">
+        <div class="stat-item"><h3>2,847</h3><p>Specimens catalogued</p></div>
+        <div class="stat-item"><h3>142</h3><p>Star systems mapped</p></div>
+        <div class="stat-item"><h3>8</h3><p>Active deep-void probes</p></div>
+        <div class="stat-item"><h3>12 ly</h3><p>Furthest contact</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-section" id="join">
+    <h2>Join the expedition</h2>
+    <p>We're recruiting xenobiologists, void navigators, and tentacle translators for the next deep-space survey.</p>
+    <a href="#" class="btn btn-primary">Apply to the Fleet</a>
+  </div>
+
+  <footer>
+    &copy; 2026 Space Squids Expeditionary Corps &mdash; Built with <a href="https://github.com/chenglou/pretext">ascii-scene</a>
+  </footer>
+
+  <script type="module" src="./space-squids.ts"></script>
+</body>
+</html>

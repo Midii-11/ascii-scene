@@ -52,6 +52,15 @@ export type AsciiRendererOptions = {
 
   /** Camera distance from origin (default: auto-fit) */
   cameraDistance?: number
+
+  /** Model scale multiplier (default: 1.0) */
+  scale?: number
+
+  /** Model X offset in world units — positive = right (default: 0) */
+  positionX?: number
+
+  /** Model Y offset in world units — positive = up (default: 0) */
+  positionY?: number
 }
 
 export type AsciiScene = {
@@ -253,6 +262,9 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
     bobAmplitude: options.bobAmplitude ?? 0.15,
     fov: options.fov ?? 40,
     cameraDistance: options.cameraDistance,
+    scale: options.scale ?? 1.0,
+    positionX: options.positionX ?? 0,
+    positionY: options.positionY ?? 0,
     container: options.container ?? document.body,
   }
 
@@ -292,9 +304,12 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
   const bl = new THREE.DirectionalLight(0xffffff, 1.0); bl.position.set(0, 3, -5); scene.add(bl)
   const btl = new THREE.DirectionalLight(0xffffff, 0.6); btl.position.set(0, -3, 2); scene.add(btl)
 
-  // Model group
+  // Pivot group handles base position/scale (library-controlled)
+  // Model group is the inner group (user-controlled via onAnimate)
+  const pivotGroup = new THREE.Group()
+  scene.add(pivotGroup)
   const modelGroup = new THREE.Group()
-  scene.add(modelGroup)
+  pivotGroup.add(modelGroup)
 
   // ASCII shader
   const color = new THREE.Color(opts.color)
@@ -357,7 +372,7 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
     smoothMX += (mouseX - smoothMX) * 0.05
     smoothMY += (mouseY - smoothMY) * 0.05
 
-    // Auto-rotation + mouse
+    // Auto-rotation + mouse (applied to inner modelGroup)
     if (opts.autoRotateSpeed) {
       modelGroup.rotation.y = now * opts.autoRotateSpeed + smoothMX * opts.mouseStrength
     } else if (opts.mouseInteraction) {
@@ -367,10 +382,16 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
       modelGroup.rotation.x = smoothMY * opts.mouseStrength * 0.5
     }
 
-    // Bobbing
-    if (opts.bobAmplitude) {
-      modelGroup.position.y = Math.sin(now * 0.001) * opts.bobAmplitude
-    }
+    // Position + bobbing + scale (applied to outer pivotGroup — never touched by onAnimate)
+    const camDist = camera.position.z
+    const vFov = (camera.fov * Math.PI) / 180
+    const visibleHeight = 2 * Math.tan(vFov / 2) * camDist
+    const visibleWidth = visibleHeight * camera.aspect
+
+    const bobY = opts.bobAmplitude ? Math.sin(now * 0.001) * opts.bobAmplitude : 0
+    pivotGroup.position.x = opts.positionX * visibleWidth * 0.5
+    pivotGroup.position.y = opts.positionY * visibleHeight * 0.5 + bobY
+    pivotGroup.scale.setScalar(opts.scale)
 
     // Update animation mixer
     if (currentMixer) {
@@ -495,6 +516,9 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
       if (newOpts.autoRotateSpeed !== undefined) opts.autoRotateSpeed = newOpts.autoRotateSpeed
       if (newOpts.mouseStrength !== undefined) opts.mouseStrength = newOpts.mouseStrength
       if (newOpts.bobAmplitude !== undefined) opts.bobAmplitude = newOpts.bobAmplitude
+      if (newOpts.scale !== undefined) opts.scale = newOpts.scale
+      if (newOpts.positionX !== undefined) opts.positionX = newOpts.positionX
+      if (newOpts.positionY !== undefined) opts.positionY = newOpts.positionY
       if (newOpts.exposure !== undefined) {
         opts.exposure = newOpts.exposure
         renderer.toneMappingExposure = newOpts.exposure
