@@ -1,0 +1,19 @@
+{
+  "name": "pretext_test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@chenglou/pretext": "^0.0.4",
+    "@types/three": "^0.183.1",
+    "three": "^0.183.2",
+    "vite": "^8.0.3"
+  }
+}
