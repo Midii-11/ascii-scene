@@ -41,12 +41,7 @@
     "animation",
     "pretext"
   ],
-  "author": "",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
   "peerDependencies": {
     "three": ">=0.160.0"
   },

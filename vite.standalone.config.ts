@@ -13,7 +13,7 @@ export default defineConfig({
     },
     outDir: 'dist',
     emptyOutDir: false, // don't wipe the lib build
-    sourcemap: true,
+    sourcemap: false,
     minify: true,
   },
 })

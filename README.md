@@ -63,7 +63,12 @@ createAsciiScene('#container', {
   cellSize: 6,                    // character grid size in px (smaller = more detail)
   brightness: 1.6,                // brightness multiplier
   background: '#000000',          // background color
-  characters: ' .:-=+*#%@',      // custom character set (dark → bright)
+  characters: ' .:-=+*#%@',      // custom character set (dark -> bright)
+
+  // Size & Position
+  scale: 1.0,                     // model scale multiplier
+  x: 0,                           // horizontal offset (-1 = left edge, 0 = center, 1 = right edge)
+  y: 0,                           // vertical offset (-1 = bottom, 0 = center, 1 = top)
 
   // Animation
   autoRotate: true,               // slowly spin the model
@@ -78,6 +83,11 @@ createAsciiScene('#container', {
   // Camera
   fov: 40,                        // field of view
   exposure: 2.0,                  // tone mapping exposure
+
+  // Custom per-frame animation
+  onAnimate: (time, delta, model) => {
+    model.position.x = Math.sin(time * 0.001) * 0.5
+  },
 })
 ```
 
@@ -86,10 +96,16 @@ createAsciiScene('#container', {
 ```ts
 const scene = await createAsciiScene('#bg', { model: '/bee.glb' })
 
-// Update appearance
+// Appearance
 scene.setColor('#ff0000')
 scene.setBrightness(2.0)
 scene.setCellSize(4)
+
+// Size & Position
+scene.setScale(1.5)
+scene.setPosition(0.5, -0.3)   // shift right and down
+
+// Animation
 scene.setRotateSpeed(5)
 
 // Load a different model
