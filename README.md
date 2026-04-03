@@ -4,6 +4,10 @@ Render any 3D model as animated ASCII art. GPU-powered, mouse-reactive, one func
 
 ![ascii-scene demo](Home_Animation.gif)
 
+**ascii-scene** turns any `.glb`/`.gltf` 3D model into a real-time ASCII art animation running entirely on the GPU. Drop it into a website as an animated background, a hero visual, or a standalone art piece — with a single function call.
+
+Under the hood, Three.js renders your model to an offscreen texture. A custom GLSL fragment shader then divides the screen into a character grid, samples brightness at each cell, and maps it to the right glyph from a pre-built character atlas. The result is a 60fps ASCII rendering with no CPU pixel readback. Mouse reactivity, auto-rotation, bobbing, and per-frame animation hooks are all built in.
+
 Built on [Three.js](https://threejs.org) + [Pretext](https://github.com/chenglou/pretext) for proportional font accuracy.
 
 ## Install
