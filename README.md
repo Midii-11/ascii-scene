@@ -2,6 +2,8 @@
 
 Render any 3D model as animated ASCII art. GPU-powered, mouse-reactive, one function call.
 
+![ascii-scene demo](Home_Animation.gif)
+
 Built on [Three.js](https://threejs.org) + [Pretext](https://github.com/chenglou/pretext) for proportional font accuracy.
 
 ## Install
@@ -12,7 +14,7 @@ npm install ascii-scene three
 
 ## Quick Start
 
-```ts
+```tsP
 import { createAsciiScene } from 'ascii-scene'
 
 const scene = await createAsciiScene('#background', {
@@ -156,7 +158,11 @@ ascii.start()
 3. **Pretext** measures each character's width for proportional font accuracy
 4. Everything runs on the **GPU** at 60fps — no CPU pixel readback
 
-Same architecture as [dragonfly.xyz](https://dragonfly.xyz).
+
+## Credits
+
+- 3D squid model in demos by [Open Source 3D Assets / SquareSquid Art](https://www.opensource3dassets.com/en/gallery?avatar=002-squaresquid-art)
+- ASCII shader technique inspired by [dragonfly.xyz](https://dragonfly.xyz)
 
 ## License
 
