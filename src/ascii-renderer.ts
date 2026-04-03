@@ -209,6 +209,7 @@ const FRAGMENT_SHADER = `
   uniform float uAtlasRows;
   uniform vec3 uColor;
   uniform float uBrightness;
+  uniform vec3 uBackground;
 
   varying vec2 vUv;
 
@@ -234,9 +235,9 @@ const FRAGMENT_SHADER = `
 
     vec4 charPixel = texture2D(uCharAtlas, atlasUV);
     float charAlpha = charPixel.r;
-    vec3 finalColor = uColor * charAlpha * (0.3 + 0.7 * gray);
+    vec3 finalColor = uColor * charAlpha * (0.55 + 0.45 * gray);
 
-    if (gray < 0.03) finalColor = vec3(0.0);
+    if (gray < 0.03) finalColor = uBackground;
 
     gl_FragColor = vec4(finalColor, 1.0);
   }
@@ -290,8 +291,10 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
   const sceneRT = new THREE.WebGLRenderTarget(512, 512)
 
   // 3D Scene
+  // Background must stay black so the ASCII shader can detect empty areas (gray < 0.03).
+  // The visible background color is handled by the shader's uBackground uniform.
   const scene = new THREE.Scene()
-  scene.background = new THREE.Color(opts.background)
+  scene.background = new THREE.Color(0x000000)
 
   const camera = new THREE.PerspectiveCamera(opts.fov, 2, 0.1, 1000)
   camera.position.set(0, 0, opts.cameraDistance ?? 5.5)
@@ -324,6 +327,7 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
       uAtlasRows: { value: atlas.atlasRows },
       uColor: { value: color },
       uBrightness: { value: opts.brightness },
+      uBackground: { value: new THREE.Color(opts.background) },
     },
     vertexShader: VERTEX_SHADER,
     fragmentShader: FRAGMENT_SHADER,
@@ -522,6 +526,10 @@ export function createAsciiRenderer(options: AsciiRendererOptions = {}): AsciiSc
       if (newOpts.exposure !== undefined) {
         opts.exposure = newOpts.exposure
         renderer.toneMappingExposure = newOpts.exposure
+      }
+      if (newOpts.background !== undefined) {
+        opts.background = newOpts.background
+        asciiMaterial.uniforms.uBackground!.value.set(newOpts.background)
       }
     },
 

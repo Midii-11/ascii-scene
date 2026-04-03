@@ -3,68 +3,365 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASCII Renderer — GLB Model Demo</title>
+  <title>ASCII Renderer — GLB Model Playground</title>
   <style>
-    * { margin: 0; padding: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
     canvas { display: block; width: 100vw; height: 100vh; }
-    .controls {
-      position: fixed; top: 16px; left: 16px; z-index: 10;
-      font: 400 13px/1.6 "Helvetica Neue", sans-serif; color: rgba(255,255,255,0.5);
+
+    .panel {
+      position: fixed; top: 0; right: 0; z-index: 10;
+      width: 280px; height: 100vh; overflow-y: auto;
+      background: rgba(0,0,0,0.85); border-left: 1px solid rgba(255,255,255,0.08);
+      font: 400 12px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: rgba(255,255,255,0.7); padding: 16px 16px 32px;
+      backdrop-filter: blur(12px);
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
     }
-    .controls label { display: block; margin-bottom: 4px; }
-    .controls input[type=range] { width: 120px; vertical-align: middle; }
-    .controls input[type=file] { margin-bottom: 8px; }
+    .panel::-webkit-scrollbar { width: 4px; }
+    .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    .panel h2 {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1.5px; color: rgba(255,255,255,0.35);
+      margin: 20px 0 10px; padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .panel h2:first-child { margin-top: 0; }
+
+    .row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .row label { flex-shrink: 0; margin-right: 8px; }
+    .row .val {
+      flex-shrink: 0; width: 38px; text-align: right;
+      font-variant-numeric: tabular-nums; color: rgba(255,255,255,0.45);
+      font-size: 11px;
+    }
+    .row input[type=range] {
+      flex: 1; min-width: 0; height: 3px;
+      -webkit-appearance: none; appearance: none;
+      background: rgba(255,255,255,0.12); border-radius: 2px; outline: none;
+    }
+    .row input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px;
+      border-radius: 50%; background: #e6b828; cursor: pointer;
+    }
+
+    .color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .color-row label { flex-shrink: 0; }
+    .color-row input[type=color] {
+      -webkit-appearance: none; appearance: none;
+      width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px; background: none; cursor: pointer; padding: 0;
+    }
+    .color-row input[type=color]::-webkit-color-swatch-wrapper { padding: 2px; }
+    .color-row input[type=color]::-webkit-color-swatch { border: none; border-radius: 2px; }
+
+    .toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .toggle-row label { cursor: pointer; user-select: none; }
+    .toggle-row input[type=checkbox] { accent-color: #e6b828; }
+
+    .file-row { margin-bottom: 12px; }
+    .file-row input[type=file] {
+      font-size: 11px; color: rgba(255,255,255,0.5);
+    }
+    .file-row input[type=file]::file-selector-button {
+      font-size: 11px; padding: 4px 10px; margin-right: 8px;
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;
+    }
+    .file-row input[type=file]::file-selector-button:hover {
+      background: rgba(255,255,255,0.14);
+    }
+
+    .chars-row { margin-bottom: 8px; }
+    .chars-row textarea {
+      width: 100%; height: 48px; resize: vertical;
+      font: 11px/1.4 "Courier New", monospace;
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 4px;
+      padding: 6px 8px; outline: none;
+    }
+    .chars-row textarea:focus { border-color: rgba(230,184,40,0.4); }
+    .chars-row .hint {
+      font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 2px;
+    }
+
+    .btn {
+      font-size: 11px; padding: 5px 12px;
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;
+    }
+    .btn:hover { background: rgba(255,255,255,0.14); }
+
+    .anim-list {
+      font-size: 11px; color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+    }
+    .anim-list button {
+      display: block; width: 100%; text-align: left;
+      font-size: 11px; padding: 3px 8px; margin-top: 2px;
+      background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 3px; cursor: pointer;
+    }
+    .anim-list button:hover { background: rgba(255,255,255,0.1); }
+
+    #canvas-container { width: calc(100vw - 280px); height: 100vh; }
   </style>
 </head>
 <body>
   <div id="canvas-container"></div>
-  <div class="controls">
-    <input type="file" id="file-input" accept=".glb,.gltf">
-    <label>Cell size: <input type="range" id="cell" min="3" max="16" value="6"> <span id="cell-val">6</span></label>
-    <label>Brightness: <input type="range" id="bright" min="5" max="40" value="16"> <span id="bright-val">1.6</span></label>
-    <label>Rotation: <input type="range" id="rot" min="0" max="20" value="5"> <span id="rot-val">0.5</span></label>
-    <label>Color: <input type="color" id="color" value="#e6b828"></label>
+
+  <div class="panel">
+    <h2>Model</h2>
+    <div class="file-row">
+      <input type="file" id="file-input" accept=".glb,.gltf">
+    </div>
+    <div id="anim-section" style="display:none">
+      <div style="display:flex; gap:6px; margin-bottom:4px;">
+        <button class="btn" id="play-all">Play all</button>
+        <button class="btn" id="stop-all">Stop all</button>
+      </div>
+      <div class="anim-list" id="anim-list"></div>
+    </div>
+
+    <h2>Appearance</h2>
+    <div class="color-row">
+      <label>Color</label>
+      <input type="color" id="color" value="#e6b828">
+    </div>
+    <div class="color-row">
+      <label>ASCII bg</label>
+      <input type="color" id="bg-color" value="#000000">
+    </div>
+    <div class="color-row">
+      <label>Page bg</label>
+      <input type="color" id="page-bg" value="#000000">
+    </div>
+    <div class="row">
+      <label>Cell size</label>
+      <input type="range" id="cell" min="2" max="20" step="1" value="6">
+      <span class="val" id="cell-val">6</span>
+    </div>
+    <div class="row">
+      <label>Brightness</label>
+      <input type="range" id="bright" min="0" max="50" step="1" value="16">
+      <span class="val" id="bright-val">1.6</span>
+    </div>
+    <div class="row">
+      <label>Exposure</label>
+      <input type="range" id="exposure" min="0" max="50" step="1" value="20">
+      <span class="val" id="exposure-val">2.0</span>
+    </div>
+
+    <h2>Characters</h2>
+    <div class="chars-row">
+      <textarea id="chars"> ._-,:;!~=+*?/\|(){}[]#&@$%QBMWgdpqb98653ZSkEAGXHO0</textarea>
+      <div class="hint">Dark → bright. Change and reload to apply.</div>
+      <button class="btn" id="apply-chars" style="margin-top:6px">Apply charset</button>
+    </div>
+
+    <h2>Motion</h2>
+    <div class="row">
+      <label>Rotate speed</label>
+      <input type="range" id="rot" min="0" max="50" step="1" value="5">
+      <span class="val" id="rot-val">0.5</span>
+    </div>
+    <div class="row">
+      <label>Bob amplitude</label>
+      <input type="range" id="bob" min="0" max="50" step="1" value="15">
+      <span class="val" id="bob-val">0.15</span>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="mouse-toggle" checked>
+      <label for="mouse-toggle">Mouse interaction</label>
+    </div>
+    <div class="row">
+      <label>Mouse strength</label>
+      <input type="range" id="mouse-str" min="0" max="20" step="1" value="5">
+      <span class="val" id="mouse-str-val">0.5</span>
+    </div>
+
+    <h2>Camera &amp; Transform</h2>
+    <div class="row">
+      <label>FOV</label>
+      <input type="range" id="fov" min="10" max="120" step="1" value="40">
+      <span class="val" id="fov-val">40</span>
+    </div>
+    <div class="row">
+      <label>Scale</label>
+      <input type="range" id="scale" min="1" max="30" step="1" value="10">
+      <span class="val" id="scale-val">1.0</span>
+    </div>
+    <div class="row">
+      <label>Position X</label>
+      <input type="range" id="pos-x" min="-10" max="10" step="1" value="0">
+      <span class="val" id="pos-x-val">0.0</span>
+    </div>
+    <div class="row">
+      <label>Position Y</label>
+      <input type="range" id="pos-y" min="-10" max="10" step="1" value="0">
+      <span class="val" id="pos-y-val">0.0</span>
+    </div>
   </div>
+
   <script type="module">
     import { createAsciiRenderer } from '../src/ascii-renderer.ts'
 
-    const ascii = createAsciiRenderer({
+    let ascii = createAsciiRenderer({
       container: document.getElementById('canvas-container'),
       color: 0xe6b828,
     })
-
     ascii.start()
 
-    // File upload
+    let currentModel = null
+
+    // ── File upload ──────────────────────────────────────────────
     document.getElementById('file-input').addEventListener('change', async (e) => {
       const file = e.target.files[0]
       if (!file) return
       const url = URL.createObjectURL(file)
-      const model = await ascii.loadModel(url)
-      model.playAll()
+      currentModel = await ascii.loadModel(url)
+      currentModel.playAll()
       URL.revokeObjectURL(url)
+      buildAnimList()
     })
 
-    // Controls
-    document.getElementById('cell').addEventListener('input', (e) => {
-      const v = +e.target.value
-      document.getElementById('cell-val').textContent = v
+    // ── Animation controls ──────────────────────────────────────
+    function buildAnimList() {
+      const section = document.getElementById('anim-section')
+      const list = document.getElementById('anim-list')
+      list.innerHTML = ''
+      if (!currentModel || currentModel.animations.length === 0) {
+        section.style.display = 'none'
+        return
+      }
+      section.style.display = 'block'
+      currentModel.animations.forEach((clip, i) => {
+        const btn = document.createElement('button')
+        btn.textContent = `▶ ${clip.name || `Animation ${i}`}`
+        btn.addEventListener('click', () => currentModel.playAnimation(i))
+        list.appendChild(btn)
+      })
+    }
+    document.getElementById('play-all').addEventListener('click', () => currentModel?.playAll())
+    document.getElementById('stop-all').addEventListener('click', () => currentModel?.stopAll())
+
+    // ── Slider helper ───────────────────────────────────────────
+    function slider(id, valId, transform, apply) {
+      const input = document.getElementById(id)
+      const display = document.getElementById(valId)
+      input.addEventListener('input', () => {
+        const v = transform(+input.value)
+        display.textContent = typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v
+        apply(v)
+      })
+    }
+
+    // ── Appearance ──────────────────────────────────────────────
+    slider('cell', 'cell-val', v => v, v => {
       ascii.setOptions({ cellSize: [v, Math.round(v * 1.67)] })
     })
-    document.getElementById('bright').addEventListener('input', (e) => {
-      const v = +e.target.value / 10
-      document.getElementById('bright-val').textContent = v.toFixed(1)
+
+    slider('bright', 'bright-val', v => v / 10, v => {
       ascii.setOptions({ brightness: v })
     })
-    document.getElementById('rot').addEventListener('input', (e) => {
-      const v = +e.target.value / 10000
-      document.getElementById('rot-val').textContent = (v * 1000).toFixed(1)
-      ascii.setOptions({ autoRotateSpeed: v })
+
+    slider('exposure', 'exposure-val', v => v / 10, v => {
+      ascii.setOptions({ exposure: v })
     })
+
     document.getElementById('color').addEventListener('input', (e) => {
+      ascii.setOptions({ color: parseInt(e.target.value.slice(1), 16) })
+    })
+
+    document.getElementById('bg-color').addEventListener('input', (e) => {
       const hex = parseInt(e.target.value.slice(1), 16)
-      ascii.setOptions({ color: hex })
+      ascii.setOptions({ background: hex })
+    })
+
+    document.getElementById('page-bg').addEventListener('input', (e) => {
+      document.body.style.background = e.target.value
+    })
+
+    // ── Characters ──────────────────────────────────────────────
+    document.getElementById('apply-chars').addEventListener('click', () => {
+      const chars = document.getElementById('chars').value
+      const bgHex = document.getElementById('bg-color').dataset.hex
+      const bg = bgHex ? parseInt(bgHex.slice(1), 16) : 0x000000
+
+      // Recreate renderer with new charset and background
+      ascii.dispose()
+      ascii = createAsciiRenderer({
+        container: document.getElementById('canvas-container'),
+        color: parseInt(document.getElementById('color').value.slice(1), 16),
+        characters: chars,
+        background: bg,
+        brightness: +document.getElementById('bright').value / 10,
+        exposure: +document.getElementById('exposure').value / 10,
+        cellSize: [+document.getElementById('cell').value, Math.round(+document.getElementById('cell').value * 1.67)],
+        autoRotateSpeed: +document.getElementById('rot').value / 10000,
+        bobAmplitude: +document.getElementById('bob').value / 100,
+        mouseInteraction: document.getElementById('mouse-toggle').checked,
+        mouseStrength: +document.getElementById('mouse-str').value / 10,
+        fov: +document.getElementById('fov').value,
+        scale: +document.getElementById('scale').value / 10,
+        positionX: +document.getElementById('pos-x').value / 10,
+        positionY: +document.getElementById('pos-y').value / 10,
+      })
+      ascii.start()
+
+      // Re-load current model if one was loaded via file input
+      const fileInput = document.getElementById('file-input')
+      if (fileInput.files[0]) {
+        const url = URL.createObjectURL(fileInput.files[0])
+        ascii.loadModel(url).then(m => {
+          currentModel = m
+          m.playAll()
+          URL.revokeObjectURL(url)
+          buildAnimList()
+        })
+      }
+    })
+
+    // ── Motion ──────────────────────────────────────────────────
+    slider('rot', 'rot-val', v => v / 10, v => {
+      ascii.setOptions({ autoRotateSpeed: v / 1000 })
+    })
+
+    slider('bob', 'bob-val', v => v / 100, v => {
+      ascii.setOptions({ bobAmplitude: v })
+    })
+
+    document.getElementById('mouse-toggle').addEventListener('change', (e) => {
+      // Mouse toggle requires recreate — apply via charset button or live
+      ascii.setOptions({ mouseStrength: e.target.checked ? +document.getElementById('mouse-str').value / 10 : 0 })
+    })
+
+    slider('mouse-str', 'mouse-str-val', v => v / 10, v => {
+      if (document.getElementById('mouse-toggle').checked) {
+        ascii.setOptions({ mouseStrength: v })
+      }
+    })
+
+    // ── Camera & Transform ──────────────────────────────────────
+    slider('fov', 'fov-val', v => v, v => {
+      ascii.camera.fov = v
+      ascii.camera.updateProjectionMatrix()
+    })
+
+    slider('scale', 'scale-val', v => v / 10, v => {
+      ascii.setOptions({ scale: v })
+    })
+
+    slider('pos-x', 'pos-x-val', v => v / 10, v => {
+      ascii.setOptions({ positionX: v })
+    })
+
+    slider('pos-y', 'pos-y-val', v => v / 10, v => {
+      ascii.setOptions({ positionY: v })
     })
   </script>
 </body>
